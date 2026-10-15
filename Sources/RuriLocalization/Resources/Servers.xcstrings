@@ -523,24 +523,6 @@
         }
       }
     },
-    "Servers.estimatedPortion" : {
-      "comment" : "Server playtime estimate summary; %1$@ is the formatted estimated portion of the duration.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ of this is estimated"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "其中估算 %1$@"
-          }
-        }
-      }
-    },
     "Servers.favorite" : {
       "comment" : "Server action that pins the server to the home page. No placeholders.",
       "extractionState" : "manual",
@@ -2103,6 +2085,24 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "搜索名称或地址"
+          }
+        }
+      }
+    },
+    "Servers.server" : {
+      "comment" : "Server playtime attribution category for a multiplayer server. No placeholders.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "服务器"
           }
         }
       }

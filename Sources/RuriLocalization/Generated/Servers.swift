@@ -177,12 +177,6 @@ extension Messages {
         public static var estimated: LocalizedMessage {
             .init(key: "Servers.estimated", table: "Servers", fallback: "估算")
         }
-        /// 其中估算 %1$@
-        ///
-        /// Resource: `Servers.Servers.estimatedPortion`.
-        public static func estimatedPortion(_ value0: String) -> LocalizedMessage {
-            .init(key: "Servers.estimatedPortion", table: "Servers", fallback: "其中估算 %1$@", arguments: [.text(value0)])
-        }
         /// 固定到主页
         ///
         /// Resource: `Servers.Servers.favorite`.
@@ -675,6 +669,12 @@ extension Messages {
         public static var search: LocalizedMessage {
             .init(key: "Servers.search", table: "Servers", fallback: "搜索名称或地址")
         }
+        /// 服务器
+        ///
+        /// Resource: `Servers.Servers.server`.
+        public static var server: LocalizedMessage {
+            .init(key: "Servers.server", table: "Servers", fallback: "服务器")
+        }
         /// %1$lld 个服务器
         ///
         /// Resource: `Servers.Servers.serverCount`.
@@ -801,7 +801,6 @@ extension Messages {
             "Servers:Servers.emptyInstanceListDescription": .init("添加的服务器会出现在游戏的多人游戏列表中。", []),
             "Servers:Servers.estimateHint": .init("离开时间未知，估算时长可能包含停留在菜单的时间。", []),
             "Servers:Servers.estimated": .init("估算", []),
-            "Servers:Servers.estimatedPortion": .init("其中估算 %1$@", [.text]),
             "Servers:Servers.favorite": .init("固定到主页", []),
             "Servers:Servers.favoriteOnlyFooter": .init("服务器会保存在 Ruri 的服务器页面中，加入时再添加到所选实例的多人游戏列表。", []),
             "Servers:Servers.favorites": .init("已固定", []),
@@ -884,6 +883,7 @@ extension Messages {
             "Servers:Servers.saveToFooter": .init("添加后，此服务器会显示在该实例的多人游戏列表中。", []),
             "Servers:Servers.savedInLibrary": .init("未添加到任何实例时，仍保存在 Ruri 中", []),
             "Servers:Servers.search": .init("搜索名称或地址", []),
+            "Servers:Servers.server": .init("服务器", []),
             "Servers:Servers.serverCount": .init("%1$lld 个服务器", [.integer]),
             "Servers:Servers.settingsFooter": .init("别名、备注和首选实例仅保存在 Ruri 中，不影响游戏中的服务器列表。", []),
             "Servers:Servers.sharedDirectory": .init("使用同一游戏文件夹的实例共用此列表。", []),

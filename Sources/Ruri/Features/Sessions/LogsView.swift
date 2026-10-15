@@ -93,26 +93,7 @@ struct LogsView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     hero(session)
                     facts(session)
-                if session.activity != nil {
-                    let segments = session.playedSegments
-                    Surface {
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text(Messages.Servers.history.localized).font(.headline)
-                            ForEach(segments) { segment in
-                                HStack {
-                                    Text(segment.target.name).lineLimit(1)
-                                    Spacer()
-                                    if segment.quality != .observed {
-                                        Text(Messages.Servers.estimated.localized).font(.caption).foregroundStyle(.secondary)
-                                            .help(Messages.Servers.estimateHint.localized)
-                                    }
-                                    Text(LocalizedFormat.duration(segment.seconds)).monospacedDigit()
-                                }
-                            }
-                            if segments.isEmpty { Text(Messages.Servers.unattributed.localized).foregroundStyle(.secondary) }
-                        }
-                    }
-                }
+                    if session.activity != nil { PlayedSegmentsSection(session: session) }
                     GameDiagnosticView(session: session, action: diagnosticAction).id(session.id)
                     tools(session)
                 }

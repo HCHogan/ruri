@@ -461,7 +461,7 @@ struct GameHistoryView: View {
                     ForEach(Array(overview.servers.sorted { $0.seconds > $1.seconds }.prefix(8))) { total in
                         let title = serverTitle(total)
                         RankTile(title: title, seconds: total.seconds, count: total.visits, share: share(total.seconds),
-                                 subtitle: serverSubtitle(total, title: title), estimated: total.estimatedSeconds > 0,
+                                 subtitle: serverSubtitle(total, title: title),
                                  titleTruncation: title == total.address.authority ? .middle : .tail,
                                  selected: server?.id == total.id) {
                             server = server?.id == total.id ? nil : total; world = nil
@@ -653,22 +653,13 @@ struct GameHistoryView: View {
         }
     }
 
-    /// Saves keep a small `icon.png` next to their level data. Reading it is
-    /// display only: a missing or oversized file just leaves the globe.
     private func loadWorldIcons() async {
         let wanted = worldIconRequests.filter { !worldIconsChecked.contains($0.key) }
         guard !wanted.isEmpty else { return }
         let paths = model.paths
         let loaded = await Task.detached(priority: .utility) { () -> [String: Data] in
             var result: [String: Data] = [:]
-            for item in wanted {
-                let saves = paths.game(item.instanceID).appendingPathComponent("saves", isDirectory: true)
-                guard let url = try? LauncherPaths.safePath(item.folder + "/icon.png", within: saves),
-                      let values = try? url.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey, .fileSizeKey]),
-                      values.isRegularFile == true, values.isSymbolicLink != true, (values.fileSize ?? .max) <= 1_048_576,
-                      let data = try? Data(contentsOf: url) else { continue }
-                result[item.key] = data
-            }
+            for item in wanted { result[item.key] = WorldIcon.data(paths: paths, instanceID: item.instanceID, folder: item.folder) }
             return result
         }.value
         guard !Task.isCancelled else { return }
@@ -828,9 +819,20 @@ private struct FilterChip: View {
 // MARK: - Cards and tiles
 
 /// A save's own `icon.png`, pixel-crisp like the game shows it, or a globe.
-private struct WorldIcon: View {
+struct WorldIcon: View {
     let image: NSImage?
     var size: CGFloat = 40
+
+    /// Saves keep a small `icon.png` next to their level data. Reading it is
+    /// display only: a missing or oversized file just leaves the globe.
+    nonisolated static func data(paths: LauncherPaths, instanceID: UUID, folder: String) -> Data? {
+        let saves = paths.game(instanceID).appendingPathComponent("saves", isDirectory: true)
+        guard let url = try? LauncherPaths.safePath(folder + "/icon.png", within: saves),
+              let values = try? url.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey, .fileSizeKey]),
+              values.isRegularFile == true, values.isSymbolicLink != true, (values.fileSize ?? .max) <= 1_048_576 else { return nil }
+        return try? Data(contentsOf: url)
+    }
+
     var body: some View {
         Group {
             if let image {
@@ -902,8 +904,6 @@ private struct RankTile<Icon: View>: View {
     let count: Int
     let share: Double
     let subtitle: String?
-    /// Part of the time was inferred rather than seen, as for some server visits.
-    var estimated = false
     var titleTruncation: Text.TruncationMode = .tail
     let selected: Bool
     let action: () -> Void
@@ -927,14 +927,8 @@ private struct RankTile<Icon: View>: View {
                         Text(LocalizedFormat.duration(seconds))
                             .font(.system(size: 17, weight: .semibold, design: .rounded)).monospacedDigit()
                         Spacer(minLength: 6)
-                        HStack(spacing: 0) {
-                            Text([Messages.HistoryUI.sessionCount(Int64(count)).localized, Messages.HistoryUI.shareOfRange(LocalizedFormat.percent(share)).localized].joined(separator: " · "))
-                            if estimated {
-                                Text(" · ")
-                                Text(Messages.Servers.estimated.localized).help(Messages.Servers.estimateHint.localized)
-                            }
-                        }
-                        .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                        Text([Messages.HistoryUI.sessionCount(Int64(count)).localized, Messages.HistoryUI.shareOfRange(LocalizedFormat.percent(share)).localized].joined(separator: " · "))
+                            .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
                     }
                     ZStack(alignment: .leading) {
                         Capsule().fill(.primary.opacity(0.08))

@@ -68,16 +68,15 @@ struct ServerHistorySection: View {
                 Spacer(minLength: 16)
                 if let current {
                     VStack(alignment: .trailing, spacing: 2) {
-                        Text(Messages.Servers.playtime.localized).font(.caption.weight(.medium)).foregroundStyle(.secondary)
-                        Text(LocalizedFormat.duration(current.seconds)).font(.system(size: 22, weight: .semibold, design: .rounded)).monospacedDigit()
-                        if current.estimatedSeconds > 0 {
-                            HStack(spacing: 4) {
-                                Text(Messages.Servers.estimatedPortion(LocalizedFormat.duration(current.estimatedSeconds)).localized)
-                                Image(systemName: "info.circle")
+                        HStack(spacing: 4) {
+                            Text(Messages.Servers.playtime.localized)
+                            if current.estimatedSeconds > 0 {
+                                Image(systemName: "info.circle").help(Messages.Servers.estimateHint.localized)
+                                    .accessibilityLabel(Messages.Servers.estimateHint.localized)
                             }
-                            .font(.caption).foregroundStyle(.secondary)
-                            .help(Messages.Servers.estimateHint.localized)
                         }
+                        .font(.caption.weight(.medium)).foregroundStyle(.secondary)
+                        Text(LocalizedFormat.duration(current.seconds)).font(.system(size: 22, weight: .semibold, design: .rounded)).monospacedDigit()
                     }
                 }
             }
@@ -147,9 +146,6 @@ private struct ServerVisitRow: View {
                     Text(LocalizedFormat.date(visit.segment.startedAt)).font(.caption).foregroundStyle(.secondary)
                 }
                 Spacer(minLength: 8)
-                if visit.segment.quality != .observed {
-                    TagPill(text: Messages.Servers.estimated.localized, color: .secondary).help(Messages.Servers.estimateHint.localized)
-                }
                 Text(LocalizedFormat.duration(visit.segment.seconds)).font(.callout).foregroundStyle(.secondary).monospacedDigit()
                 Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(.tertiary)
             }
