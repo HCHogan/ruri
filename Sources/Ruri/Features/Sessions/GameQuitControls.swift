@@ -23,8 +23,6 @@ struct GameQuitControls: View {
                         }
                     }
                 }
-            } else if session.nativeQuitSupported != true {
-                Text(Messages.AppGameQuitControls.normalExitNotice.localized).font(.caption).foregroundStyle(.secondary)
             }
             HStack {
                 Button(Messages.AppGameQuitControls.returnToGame.localized) { model.returnToGame(session.instanceID) }.disabled(session.gameIdentity?.isAlive != true)

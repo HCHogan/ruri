@@ -7957,24 +7957,6 @@
         }
       }
     },
-    "AppGameQuitControls.normalExitNotice" : {
-      "comment" : "Game session exit controls: status or progress text labeled “Please exit normally through the game menu for this launch.”. No placeholders.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "For this session, quit from the game's menu."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "本次启动请通过游戏菜单正常退出。"
-          }
-        }
-      }
-    },
     "AppGameQuitControls.requestExitAgain" : {
       "comment" : "Game session exit controls: button or menu action labeled “Request Exit Again”. No placeholders.",
       "extractionState" : "manual",

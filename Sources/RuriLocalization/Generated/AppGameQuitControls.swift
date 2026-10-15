@@ -27,12 +27,6 @@ extension Messages {
         public static var gameStillRunning: LocalizedMessage {
             .init(key: "AppGameQuitControls.gameStillRunning", table: "Interface", fallback: "游戏尚未退出，可能正在保存进度或等待操作。可以返回游戏查看。")
         }
-        /// 本次启动请通过游戏菜单正常退出。
-        ///
-        /// Resource: `Interface.AppGameQuitControls.normalExitNotice`.
-        public static var normalExitNotice: LocalizedMessage {
-            .init(key: "AppGameQuitControls.normalExitNotice", table: "Interface", fallback: "本次启动请通过游戏菜单正常退出。")
-        }
         /// 再次请求退出
         ///
         /// Resource: `Interface.AppGameQuitControls.requestExitAgain`.
@@ -68,7 +62,6 @@ extension Messages {
             "Interface:AppGameQuitControls.cancelWillStop": .init("取消命令后将停止本次启动。", []),
             "Interface:AppGameQuitControls.gameExited": .init("游戏已退出，可以取消仍在运行的退出后命令。", []),
             "Interface:AppGameQuitControls.gameStillRunning": .init("游戏尚未退出，可能正在保存进度或等待操作。可以返回游戏查看。", []),
-            "Interface:AppGameQuitControls.normalExitNotice": .init("本次启动请通过游戏菜单正常退出。", []),
             "Interface:AppGameQuitControls.requestExitAgain": .init("再次请求退出", []),
             "Interface:AppGameQuitControls.requestNormalExit": .init("请求正常退出", []),
             "Interface:AppGameQuitControls.returnToGame": .init("返回游戏", []),
