@@ -45,4 +45,50 @@ struct SchematicTests {
         let schematicEntry = try #require(await manager.list().first { !$0.isDirectory })
         #expect(try await manager.info(schematicEntry).dimensions == [65535, 2, 3])
     }
+
+    @Test func followsEachModsDirectoryAndOrganizesTheTree() async throws {
+        let paths = LauncherPaths(root: FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString))
+        defer { try? FileManager.default.removeItem(at: paths.root) }
+        try paths.prepare()
+        let id = UUID(), game = paths.game(id)
+        let worldEdit = SchematicManager(paths: paths, instanceID: id, location: .worldEdit), shared = SchematicManager(paths: paths, instanceID: id)
+        #expect(await worldEdit.directory().path == game.appendingPathComponent("config/worldedit/schematics").path)
+        #expect(await shared.directory().path == game.appendingPathComponent("schematics").path)
+        let config = game.appendingPathComponent("config")
+        try FileManager.default.createDirectory(at: config.appendingPathComponent("worldedit"), withIntermediateDirectories: true)
+        try Data("# WorldEdit\nschematic-save-dir = my\\ builds\n".utf8).write(to: config.appendingPathComponent("worldedit/worldedit.properties"))
+        #expect(await worldEdit.directory().path == game.appendingPathComponent("config/worldedit/my builds").path)
+        let custom = paths.root.appendingPathComponent("shared schematics")
+        let litematica = ["Generic": ["customSchematicBaseDirectoryEnabled": true, "customSchematicBaseDirectory": custom.path]]
+        try JSONSerialization.data(withJSONObject: litematica).write(to: config.appendingPathComponent("litematica.json"))
+        #expect(await shared.directory().path == custom.path)
+
+        let source = paths.cache.appendingPathComponent("tower.schem"), other = paths.cache.appendingPathComponent("plan.litematic")
+        try Data([10, 0, 0, 0]).write(to: source); try Data([10, 0, 0, 0]).write(to: other)
+        await #expect(throws: (any Error).self) { try await worldEdit.importFiles([other]) }
+        try await worldEdit.importFiles([source])
+        try await worldEdit.createFolder("Castles")
+        try await worldEdit.createFolder("Keeps", directory: "Castles")
+        var tree = try await worldEdit.tree()
+        #expect(tree.map(\.id) == ["Castles", "tower.schem"] && tree[0].children?.map(\.id) == ["Castles/Keeps"])
+        try await worldEdit.move([tree[1]], to: "Castles/Keeps")
+        await #expect(throws: (any Error).self) { try await worldEdit.move([tree[0]], to: "Castles/Keeps") }
+        tree = try await worldEdit.tree()
+        let moved = try #require(tree.first?.children?.first?.children?.first)
+        #expect(moved.id == "Castles/Keeps/tower.schem")
+        try await worldEdit.rename(moved, to: "Tower")
+        try await worldEdit.rename(tree[0], to: "Forts")
+        #expect(try await worldEdit.list(directory: "Forts/Keeps").map(\.name) == ["Tower.schem"])
+        #expect(FileManager.default.fileExists(atPath: game.appendingPathComponent("config/worldedit/my builds/Forts/Keeps/Tower.schem").path))
+
+        try await shared.importFiles([other])
+        #expect(FileManager.default.fileExists(atPath: custom.appendingPathComponent("plan.litematic").path))
+    }
+
+    @Test func readsJavaPropertiesEscapes() {
+        func value(_ text: String) -> String? { SchematicManager.property("schematic-save-dir", in: Data(text.utf8)) }
+        #expect(value("schematic-save-dir=schematics") == "schematics")
+        #expect(value("  ! comment\n#schematic-save-dir=old\nschematic-save-dir : C\\:\\\\Builds\\u0041") == "C:\\BuildsA")
+        #expect(value("other=1") == nil)
+    }
 }

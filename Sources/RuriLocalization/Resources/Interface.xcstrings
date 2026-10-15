@@ -21439,6 +21439,60 @@
         }
       }
     },
+    "AppSchematicManagerView.copiedTo" : {
+      "comment" : "Schematic manager status after copying files. %1$@ is the destination mod name, such as WorldEdit.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copied to %1$@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已拷贝到 %1$@"
+          }
+        }
+      }
+    },
+    "AppSchematicManagerView.copyEntries" : {
+      "comment" : "Schematic manager task title for copying files to another mod folder. No format arguments.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy Schematics"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拷贝投影"
+          }
+        }
+      }
+    },
+    "AppSchematicManagerView.copyTo" : {
+      "comment" : "Schematic manager context menu command. %1$@ is the destination mod name, such as WorldEdit.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy to %1$@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拷贝到 %1$@"
+          }
+        }
+      }
+    },
     "AppSchematicManagerView.createFolder" : {
       "comment" : "Shown in the Schematic file manager: Create. No format arguments.",
       "extractionState" : "manual",
@@ -21493,38 +21547,20 @@
         }
       }
     },
-    "AppSchematicManagerView.dropSchematics" : {
-      "comment" : "Shown in the Schematic file manager: Drag Schematics here or click “Import”.. No format arguments.",
+    "AppSchematicManagerView.dropFormats" : {
+      "comment" : "Schematic manager empty-state detail. %1$@ lists accepted file extensions, such as “.schem / .schematic”.",
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Drag schematics here or click “Import”."
+            "value" : "Drag %1$@ files here"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "将投影文件拖到这里，或点按“导入…”。"
-          }
-        }
-      }
-    },
-    "AppSchematicManagerView.entryFiles" : {
-      "comment" : "Suffix appended to a folder entry name in the Schematic removal confirmation to include every contained file. Preserve the leading space. No format arguments.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " and all files inside it"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : " 及其中的全部文件"
+            "value" : "将 %1$@ 文件拖到这里"
           }
         }
       }
@@ -21619,6 +21655,24 @@
         }
       }
     },
+    "AppSchematicManagerView.folderKind" : {
+      "comment" : "Schematic manager kind column value for a folder. No format arguments.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Folder"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文件夹"
+          }
+        }
+      }
+    },
     "AppSchematicManagerView.folderName" : {
       "comment" : "Shown in the Schematic file manager: Folder name. No format arguments.",
       "extractionState" : "manual",
@@ -21673,20 +21727,20 @@
         }
       }
     },
-    "AppSchematicManagerView.goUp" : {
-      "comment" : "Shown in the Schematic file manager: Go Up One Level. No format arguments.",
+    "AppSchematicManagerView.importHere" : {
+      "comment" : "Schematic manager folder context menu command. No format arguments.",
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Go Up One Level"
+            "value" : "Import to This Folder…"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "返回上一级"
+            "value" : "导入到此文件夹…"
           }
         }
       }
@@ -21727,6 +21781,78 @@
         }
       }
     },
+    "AppSchematicManagerView.itemCount" : {
+      "comment" : "Schematic manager trash confirmation for several selected items; %1$lld is the item count.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld Item"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld Items"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "variations" : {
+            "plural" : {
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld 个项目"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "AppSchematicManagerView.kind" : {
+      "comment" : "Schematic manager column: file kind, such as Folder or LITEMATIC. No format arguments.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kind"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "种类"
+          }
+        }
+      }
+    },
+    "AppSchematicManagerView.location" : {
+      "comment" : "Schematic manager picker label for the mod folder being shown. No format arguments.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Location"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "位置"
+          }
+        }
+      }
+    },
     "AppSchematicManagerView.modifiedAt" : {
       "comment" : "Shown in the Schematic file manager: Modified at. No format arguments.",
       "extractionState" : "manual",
@@ -21741,6 +21867,78 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "修改时间"
+          }
+        }
+      }
+    },
+    "AppSchematicManagerView.modifiedColumn" : {
+      "comment" : "Schematic manager column: last modification date. No format arguments.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Date Modified"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "修改日期"
+          }
+        }
+      }
+    },
+    "AppSchematicManagerView.moveEntries" : {
+      "comment" : "Schematic manager task title for moving files into a folder. No format arguments.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move Schematics"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移动投影"
+          }
+        }
+      }
+    },
+    "AppSchematicManagerView.moveTo" : {
+      "comment" : "Schematic manager context submenu listing destination folders. No format arguments.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move To"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移到"
+          }
+        }
+      }
+    },
+    "AppSchematicManagerView.name" : {
+      "comment" : "Schematic manager column and rename field: file or folder name. No format arguments.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "名称"
           }
         }
       }
@@ -21781,6 +21979,42 @@
         }
       }
     },
+    "AppSchematicManagerView.noResults" : {
+      "comment" : "Schematic manager search empty state. %1$@ is the search text.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Results for “%1$@”"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有找到“%1$@”"
+          }
+        }
+      }
+    },
+    "AppSchematicManagerView.noSchematics" : {
+      "comment" : "Schematic manager empty-state title. No format arguments.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Schematics"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有投影"
+          }
+        }
+      }
+    },
     "AppSchematicManagerView.previewError" : {
       "comment" : "Shown in the Schematic file manager: Unable to preview information: %1$@. %1$@ is the error description returned while reading Schematic metadata.",
       "extractionState" : "manual",
@@ -21817,24 +22051,6 @@
         }
       }
     },
-    "AppSchematicManagerView.refresh" : {
-      "comment" : "Shown in the Schematic file manager: Refresh. No format arguments.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Refresh"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "刷新"
-          }
-        }
-      }
-    },
     "AppSchematicManagerView.regions" : {
       "comment" : "Shown in the Schematic file manager: Region count. No format arguments.",
       "extractionState" : "manual",
@@ -21849,6 +22065,60 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "区域数"
+          }
+        }
+      }
+    },
+    "AppSchematicManagerView.renameEntry" : {
+      "comment" : "Schematic manager task title for renaming a file or folder. No format arguments.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rename Schematic"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重新命名投影"
+          }
+        }
+      }
+    },
+    "AppSchematicManagerView.renameMenu" : {
+      "comment" : "Schematic manager context menu command that opens the rename prompt. No format arguments.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rename…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重新命名…"
+          }
+        }
+      }
+    },
+    "AppSchematicManagerView.renameTitle" : {
+      "comment" : "Schematic manager rename prompt title and confirm button. No format arguments.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rename"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重新命名"
           }
         }
       }
@@ -21871,24 +22141,6 @@
         }
       }
     },
-    "AppSchematicManagerView.schematicHelp" : {
-      "comment" : "Shown in the Schematic file manager: Files are saved in the schematics folder of the current working directory for Mods such as Litematica and WorldEdit.. No format arguments.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Files are saved in the schematics folder of the current run directory for mods such as Litematica and WorldEdit."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "文件保存在当前运行目录的 schematics 文件夹，供 Litematica、WorldEdit 等模组使用。"
-          }
-        }
-      }
-    },
     "AppSchematicManagerView.schematics" : {
       "comment" : "Shown in the Schematic file manager: Schematics. No format arguments.",
       "extractionState" : "manual",
@@ -21907,20 +22159,20 @@
         }
       }
     },
-    "AppSchematicManagerView.searchFolder" : {
-      "comment" : "Shown in the Schematic file manager: Search current folder. No format arguments.",
+    "AppSchematicManagerView.searchSchematics" : {
+      "comment" : "Schematic manager search field placeholder. No format arguments.",
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Search current folder"
+            "value" : "Search Schematics"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "搜索当前文件夹"
+            "value" : "搜索投影"
           }
         }
       }
@@ -21939,6 +22191,24 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "尺寸"
+          }
+        }
+      }
+    },
+    "AppSchematicManagerView.sizeColumn" : {
+      "comment" : "Schematic manager column: file size. No format arguments.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Size"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大小"
           }
         }
       }
@@ -21980,19 +22250,19 @@
       }
     },
     "AppSchematicManagerView.viewInfo" : {
-      "comment" : "Shown in the Schematic file manager: View Information. No format arguments.",
+      "comment" : "Schematic manager context menu command that shows file details. No format arguments.",
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "View Information"
+            "value" : "Get Info"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "查看信息"
+            "value" : "显示简介"
           }
         }
       }

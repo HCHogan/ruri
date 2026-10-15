@@ -15805,6 +15805,24 @@
         }
       }
     },
+    "CoreSchematicManager.folderIntoItself" : {
+      "comment" : "Error shown when moving a schematic folder into itself or one of its subfolders. No format arguments.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A folder can't be moved into itself."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不能将文件夹移到它自己里面。"
+          }
+        }
+      }
+    },
     "CoreSchematicManager.invalidFileOrFolderName" : {
       "comment" : "Error shown while importing, exporting, renaming, or managing Schematic files. No placeholders.",
       "extractionState" : "manual",
@@ -15950,19 +15968,19 @@
       }
     },
     "CoreSchematicManager.unsupportedSchematicFormat" : {
-      "comment" : "Error shown while importing, exporting, renaming, or managing Schematic files. No placeholders.",
+      "comment" : "Error shown when importing a file the selected schematic folder can't use. %1$@ lists accepted file extensions, such as “.schem / .schematic”.",
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Select a litematic, schem, schematic, or nbt schematic file."
+            "value" : "Select a %1$@ file."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "请选择 litematic、schem、schematic 或 nbt 投影文件。"
+            "value" : "请选择 %1$@ 文件。"
           }
         }
       }

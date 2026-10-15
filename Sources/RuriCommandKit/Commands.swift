@@ -1986,6 +1986,7 @@ struct SchematicListCommand: ExecutableCommand {
     static var spec: CommandSpec { CommandSpec(path: ["schematic","list"], summary: Messages.CLIInterface.schematicListHelp.localized, operands: [
         .init(name: "instance", type: "string", required: true, help: "instance")
     ], options: [
+        .init(name: "location", type: "string", required: false, help: Messages.CLIInterface.schematicLocationHelp.localized, values: ["schematics","worldedit"]),
         .init(name: "directory", type: "string", required: false, help: Messages.CLIInterface.schematicRelativePathHelp.localized, values: []),
         .init(name: "limit", type: "int", required: false, help: Messages.CLIInterface.resultLimitHelp.localized, values: []),
         .init(name: "offset", type: "int", required: false, help: Messages.CLIInterface.resultOffsetHelp.localized, values: []),
@@ -1997,7 +1998,9 @@ struct SchematicListCommand: ExecutableCommand {
     @Option(name: .customLong("limit"), help: ArgumentHelp(Messages.CLIInterface.resultLimitHelp.localized)) var optionLimit: Int?
     @Option(name: .customLong("offset"), help: ArgumentHelp(Messages.CLIInterface.resultOffsetHelp.localized)) var optionOffset: Int?
     @Flag(name: .customLong("all"), help: ArgumentHelp(Messages.CLIInterface.allResultsHelp.localized)) var optionAll = false
+    @Option(name: .customLong("location"), help: ArgumentHelp(Messages.CLIInterface.schematicLocationHelp.localized)) var optionLocation: String?
     var parameters: [String: Value] { [
+        "location": .text(optionLocation),
         "directory": .text(optionDirectory),
         "limit": optionLimit.map(Value.integer) ?? .null,
         "offset": optionOffset.map(Value.integer) ?? .null,
@@ -2010,12 +2013,13 @@ struct SchematicInfoCommand: ExecutableCommand {
         .init(name: "instance", type: "string", required: true, help: "instance"),
         .init(name: "path", type: "string", required: true, help: "path")
     ], options: [
-
+        .init(name: "location", type: "string", required: false, help: Messages.CLIInterface.schematicLocationHelp.localized, values: ["schematics","worldedit"])
     ], mutation: false, confirmation: false, userParticipation: false, examples: []) }
     @OptionGroup var common: CommonOptions
     @Argument(help: ArgumentHelp(Messages.CLIInterface.instanceRunDirectoryPathArgumentsHelp.localized)) var operands: [String] = []
+    @Option(name: .customLong("location"), help: ArgumentHelp(Messages.CLIInterface.schematicLocationHelp.localized)) var optionLocation: String?
     var parameters: [String: Value] { [
-        :
+        "location": .text(optionLocation)
     ].filter { $0.value != .null } }
 }
 
@@ -2024,6 +2028,7 @@ struct SchematicImportCommand: ExecutableCommand {
         .init(name: "instance", type: "string", required: true, help: "instance"),
         .init(name: "file", type: "string", required: true, help: "file")
     ], options: [
+        .init(name: "location", type: "string", required: false, help: Messages.CLIInterface.schematicLocationHelp.localized, values: ["schematics","worldedit"]),
         .init(name: "directory", type: "string", required: false, help: Messages.CLIInterface.schematicRelativePathHelp.localized, values: []),
         .init(name: "dry-run", type: "bool", required: false, help: Messages.CLIInterface.dryRunHelp.localized, values: [])
     ], mutation: true, confirmation: false, userParticipation: false, examples: []) }
@@ -2031,7 +2036,9 @@ struct SchematicImportCommand: ExecutableCommand {
     @Argument(help: ArgumentHelp(Messages.CLIInterface.contentImportArgumentsHelp.localized)) var operands: [String] = []
     @Option(name: .customLong("directory"), help: ArgumentHelp(Messages.CLIInterface.schematicRelativePathHelp.localized)) var optionDirectory: String?
     @Flag(name: .customLong("dry-run"), help: ArgumentHelp(Messages.CLIInterface.dryRunHelp.localized)) var optionDryRun = false
+    @Option(name: .customLong("location"), help: ArgumentHelp(Messages.CLIInterface.schematicLocationHelp.localized)) var optionLocation: String?
     var parameters: [String: Value] { [
+        "location": .text(optionLocation),
         "directory": .text(optionDirectory),
         "dry-run": .bool(optionDryRun)
     ].filter { $0.value != .null } }
@@ -2042,6 +2049,7 @@ struct SchematicMkdirCommand: ExecutableCommand {
         .init(name: "instance", type: "string", required: true, help: "instance"),
         .init(name: "name", type: "string", required: true, help: "name")
     ], options: [
+        .init(name: "location", type: "string", required: false, help: Messages.CLIInterface.schematicLocationHelp.localized, values: ["schematics","worldedit"]),
         .init(name: "directory", type: "string", required: false, help: Messages.CLIInterface.schematicParentDirectoryHelp.localized, values: []),
         .init(name: "dry-run", type: "bool", required: false, help: Messages.CLIInterface.dryRunHelp.localized, values: [])
     ], mutation: true, confirmation: false, userParticipation: false, examples: []) }
@@ -2049,7 +2057,9 @@ struct SchematicMkdirCommand: ExecutableCommand {
     @Argument(help: ArgumentHelp(Messages.CLIInterface.schematicFolderArgumentsHelp.localized)) var operands: [String] = []
     @Option(name: .customLong("directory"), help: ArgumentHelp(Messages.CLIInterface.schematicParentDirectoryHelp.localized)) var optionDirectory: String?
     @Flag(name: .customLong("dry-run"), help: ArgumentHelp(Messages.CLIInterface.dryRunHelp.localized)) var optionDryRun = false
+    @Option(name: .customLong("location"), help: ArgumentHelp(Messages.CLIInterface.schematicLocationHelp.localized)) var optionLocation: String?
     var parameters: [String: Value] { [
+        "location": .text(optionLocation),
         "directory": .text(optionDirectory),
         "dry-run": .bool(optionDryRun)
     ].filter { $0.value != .null } }
@@ -2061,12 +2071,15 @@ struct SchematicExportCommand: ExecutableCommand {
         .init(name: "path", type: "string", required: true, help: "path"),
         .init(name: "file", type: "string", required: true, help: "file")
     ], options: [
+        .init(name: "location", type: "string", required: false, help: Messages.CLIInterface.schematicLocationHelp.localized, values: ["schematics","worldedit"]),
         .init(name: "dry-run", type: "bool", required: false, help: Messages.CLIInterface.dryRunHelp.localized, values: [])
     ], mutation: true, confirmation: false, userParticipation: false, examples: []) }
     @OptionGroup var common: CommonOptions
     @Argument(help: ArgumentHelp(Messages.CLIInterface.schematicExportArgumentsHelp.localized)) var operands: [String] = []
     @Flag(name: .customLong("dry-run"), help: ArgumentHelp(Messages.CLIInterface.dryRunHelp.localized)) var optionDryRun = false
+    @Option(name: .customLong("location"), help: ArgumentHelp(Messages.CLIInterface.schematicLocationHelp.localized)) var optionLocation: String?
     var parameters: [String: Value] { [
+        "location": .text(optionLocation),
         "dry-run": .bool(optionDryRun)
     ].filter { $0.value != .null } }
 }
@@ -2076,6 +2089,7 @@ struct SchematicRemoveCommand: ExecutableCommand {
         .init(name: "instance", type: "string", required: true, help: "instance"),
         .init(name: "path", type: "string", required: true, help: "path")
     ], options: [
+        .init(name: "location", type: "string", required: false, help: Messages.CLIInterface.schematicLocationHelp.localized, values: ["schematics","worldedit"]),
         .init(name: "dry-run", type: "bool", required: false, help: Messages.CLIInterface.dryRunHelp.localized, values: []),
         .init(name: "yes", type: "bool", required: false, help: Messages.CLIInterface.confirmDeleteOrReplaceHelp.localized, values: [])
     ], mutation: true, confirmation: true, userParticipation: false, examples: []) }
@@ -2083,7 +2097,9 @@ struct SchematicRemoveCommand: ExecutableCommand {
     @Argument(help: ArgumentHelp(Messages.CLIInterface.instanceRunDirectoryPathArgumentsHelp.localized)) var operands: [String] = []
     @Flag(name: .customLong("dry-run"), help: ArgumentHelp(Messages.CLIInterface.dryRunHelp.localized)) var optionDryRun = false
     @Flag(name: .customLong("yes"), help: ArgumentHelp(Messages.CLIInterface.confirmDeleteOrReplaceHelp.localized)) var optionYes = false
+    @Option(name: .customLong("location"), help: ArgumentHelp(Messages.CLIInterface.schematicLocationHelp.localized)) var optionLocation: String?
     var parameters: [String: Value] { [
+        "location": .text(optionLocation),
         "dry-run": .bool(optionDryRun),
         "yes": .bool(optionYes)
     ].filter { $0.value != .null } }

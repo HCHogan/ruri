@@ -21,6 +21,12 @@ extension Messages {
         public static var exportDestinationSameAsSource: LocalizedMessage {
             .init(key: "CoreSchematicManager.exportDestinationSameAsSource", table: "Errors", fallback: "导出位置与原文件相同。")
         }
+        /// 不能将文件夹移到它自己里面。
+        ///
+        /// Resource: `Errors.CoreSchematicManager.folderIntoItself`.
+        public static var folderIntoItself: LocalizedMessage {
+            .init(key: "CoreSchematicManager.folderIntoItself", table: "Errors", fallback: "不能将文件夹移到它自己里面。")
+        }
         /// 请输入有效的文件或文件夹名称。
         ///
         /// Resource: `Errors.CoreSchematicManager.invalidFileOrFolderName`.
@@ -69,16 +75,17 @@ extension Messages {
         public static var symlinkUnchanged: LocalizedMessage {
             .init(key: "CoreSchematicManager.symlinkUnchanged", table: "Errors", fallback: "投影管理不修改符号链接。")
         }
-        /// 请选择 litematic、schem、schematic 或 nbt 投影文件。
+        /// 请选择 %1$@ 文件。
         ///
         /// Resource: `Errors.CoreSchematicManager.unsupportedSchematicFormat`.
-        public static var unsupportedSchematicFormat: LocalizedMessage {
-            .init(key: "CoreSchematicManager.unsupportedSchematicFormat", table: "Errors", fallback: "请选择 litematic、schem、schematic 或 nbt 投影文件。")
+        public static func unsupportedSchematicFormat(_ value0: String) -> LocalizedMessage {
+            .init(key: "CoreSchematicManager.unsupportedSchematicFormat", table: "Errors", fallback: "请选择 %1$@ 文件。", arguments: [.text(value0)])
         }
         static let definitions: [String: MessageDefinition] = [
             "Errors:CoreSchematicManager.duplicateFileOrFolder": .init("同名文件或文件夹已存在。", []),
             "Errors:CoreSchematicManager.duplicateSchematicName": .init("同名投影已存在：%1$@。请先改名或移走旧文件。", [.text]),
             "Errors:CoreSchematicManager.exportDestinationSameAsSource": .init("导出位置与原文件相同。", []),
+            "Errors:CoreSchematicManager.folderIntoItself": .init("不能将文件夹移到它自己里面。", []),
             "Errors:CoreSchematicManager.invalidFileOrFolderName": .init("请输入有效的文件或文件夹名称。", []),
             "Errors:CoreSchematicManager.invalidImportFileCount": .init("请选择 1–200 个投影文件。", []),
             "Errors:CoreSchematicManager.schematicExportSaveFailed": .init("无法保存导出的投影。", []),
@@ -87,7 +94,7 @@ extension Messages {
             "Errors:CoreSchematicManager.singleSourceRequired": .init("请选择单个投影文件导出。", []),
             "Errors:CoreSchematicManager.symlinkDirectoryUnchanged": .init("投影管理不修改符号链接目录。", []),
             "Errors:CoreSchematicManager.symlinkUnchanged": .init("投影管理不修改符号链接。", []),
-            "Errors:CoreSchematicManager.unsupportedSchematicFormat": .init("请选择 litematic、schem、schematic 或 nbt 投影文件。", []),
+            "Errors:CoreSchematicManager.unsupportedSchematicFormat": .init("请选择 %1$@ 文件。", [.text]),
         ]
     }
 }

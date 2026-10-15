@@ -1923,6 +1923,12 @@ extension Messages {
         public static var schematicListHelp: LocalizedMessage {
             .init(key: "CLIInterface.schematicListHelp", table: "CLIInterface", fallback: "列出投影文件及文件夹。")
         }
+        /// 投影位置：schematics（Litematica、Create）或 worldedit。
+        ///
+        /// Resource: `CLIInterface.CLIInterface.schematicLocationHelp`.
+        public static var schematicLocationHelp: LocalizedMessage {
+            .init(key: "CLIInterface.schematicLocationHelp", table: "CLIInterface", fallback: "投影位置：schematics（Litematica、Create）或 worldedit。")
+        }
         /// 找不到投影文件。
         ///
         /// Resource: `CLIInterface.CLIInterface.schematicNotFound`.
@@ -2652,6 +2658,7 @@ extension Messages {
             "CLIInterface:CLIInterface.schematicFolderArgumentsHelp": .init("实例 ID 和文件夹名称。", []),
             "CLIInterface:CLIInterface.schematicImportHelp": .init("导入投影文件。", []),
             "CLIInterface:CLIInterface.schematicListHelp": .init("列出投影文件及文件夹。", []),
+            "CLIInterface:CLIInterface.schematicLocationHelp": .init("投影位置：schematics（Litematica、Create）或 worldedit。", []),
             "CLIInterface:CLIInterface.schematicNotFound": .init("找不到投影文件。", []),
             "CLIInterface:CLIInterface.schematicParentDirectoryHelp": .init("父目录的相对路径。", []),
             "CLIInterface:CLIInterface.schematicRelativePathHelp": .init("投影目录的相对路径。", []),

@@ -5761,6 +5761,24 @@
         }
       }
     },
+    "CLIInterface.schematicLocationHelp" : {
+      "comment" : "Help text for `--location` in `ruri schematic` commands: schematics is the folder Litematica and Create read, worldedit is WorldEdit's save folder.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schematic folder: schematics (Litematica, Create) or worldedit."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "投影位置：schematics（Litematica、Create）或 worldedit。"
+          }
+        }
+      }
+    },
     "CLIInterface.schematicNotFound" : {
       "comment" : "CLI schematic lookup error when the requested file or folder is absent.",
       "extractionState" : "manual",

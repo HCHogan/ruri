@@ -40,11 +40,6 @@
     "reason": "Product, loader, platform, format or unit name with verbatim version/author/dimension data."
   },
   {
-    "file": "Sources/Ruri/Features/Worlds/SchematicManagerView.swift",
-    "literal": "\"schematics\"",
-    "reason": "On-disk Minecraft directory name."
-  },
-  {
     "file": "Sources/Ruri/Features/Worlds/WorldDataPackSearchView.swift",
     "literal": "\" · Minecraft \"",
     "reason": "Product, loader, platform, format or unit name with verbatim version/author/dimension data."

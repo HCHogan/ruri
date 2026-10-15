@@ -105,14 +105,14 @@ extension CLIApplication {
     @MainActor static func manageSchematic(_ request: CommandRequest) async throws -> Value {
         let (_, paths, _) = try await context(request), id = try uuid(request.operand())
         _ = try InstanceService(paths: paths).resolve(id: id)
-        let manager = SchematicManager(paths: paths, instanceID: id), action = request.spec.path.last!, directory = request.string("directory") ?? ""
+        let location = SchematicLocation(rawValue: request.string("location") ?? "") ?? .schematics
+        let manager = SchematicManager(paths: paths, instanceID: id, location: location), action = request.spec.path.last!, directory = request.string("directory") ?? ""
         if action == "list" { return request.page(try await manager.list(directory: directory).map(schematicValue)) }
         let target = try request.operand(1)
         if action == "import" || action == "mkdir" {
             if action == "import", !FileManager.default.fileExists(atPath: target) { throw OperationFailure("NOT_FOUND", Messages.CLIInterface.inputFileNotFound.localized) }
             _ = try await manager.list(directory: directory)
             if !request.dryRun {
-                let lease = try GameRunLease.acquire(paths: paths, instanceID: id); defer { withExtendedLifetime(lease) {} }
                 if action == "import" { try await manager.importFiles([URL(fileURLWithPath: target)], directory: directory) }
                 else { try await manager.createFolder(target, directory: directory) }
             }
@@ -128,8 +128,8 @@ extension CLIApplication {
         }
         let file = action == "export" ? try URL(fileURLWithPath: request.operand(2)) : nil
         if let file { try requireNewFile(file) }
+        // Schematic folders are read live by the game, so these edits do not wait for it to quit.
         if !request.dryRun {
-            let lease = try GameRunLease.acquire(paths: paths, instanceID: id); defer { withExtendedLifetime(lease) {} }
             if let file { try await manager.export(entry, to: file) } else { _ = try await manager.remove(entry) }
         }
         return .object(["dryRun": .bool(request.dryRun), "entry": schematicValue(entry), "file": .text(file?.path)])
