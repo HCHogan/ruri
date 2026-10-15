@@ -1326,11 +1326,6 @@
     "reason": "The middle dot separates independent labels, names or numeric summaries; it carries no grammatical word order."
   },
   {
-    "file": "Sources/Ruri/Features/Sessions/GameHistoryView.swift",
-    "literal": "Text(Messages.HistoryUI.sessionCount(Int64(total.count)).localized + \" · \" + Messages.HistoryUI.shareOfRange(LocalizedFormat.percent(share)).localized)",
-    "reason": "The middle dot separates independent labels, names or numeric summaries; it carries no grammatical word order."
-  },
-  {
     "file": "Sources/Ruri/Features/Sessions/GameSessionPresentation.swift",
     "literal": "return world.map { $0.name + \" · \" + Messages.Servers.legacyTime.localized } ?? Messages.HistoryUI.unknownWorld.localized",
     "reason": "The middle dot separates independent labels, names or numeric summaries; it carries no grammatical word order."

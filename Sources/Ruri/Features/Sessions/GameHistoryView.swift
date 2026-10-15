@@ -19,6 +19,14 @@ struct GameHistoryView: View {
         let overviews = ViewSnapshotCache<OverviewKey, GameHistoryOverview>()
         let runs = ViewSnapshotCache<RunsKey, RunsSnapshot>()
         let worldIcons = ViewSnapshotCache<String, NSImage>(capacity: 128)
+        let servers = ViewSnapshotCache<String, ServerArt>(capacity: 64)
+    }
+
+    /// The name and favicon a server goes by in the player's lists, which
+    /// the history itself only knows as an address.
+    struct ServerArt {
+        let name: String
+        let icon: Data?
     }
 
     struct OverviewKey: Hashable {
@@ -115,6 +123,7 @@ struct GameHistoryView: View {
     @State private var request = UUID()
     @State private var worldIcons: [String: NSImage] = [:]
     @State private var worldIconsChecked: Set<String> = []
+    @State private var serverArt: [String: ServerArt] = [:]
     @State private var chartSelection: Date?
     /// The first fill of the page is not a change worth animating; only a
     /// later range or filter switch rolls the numbers over.
@@ -141,6 +150,9 @@ struct GameHistoryView: View {
             }
         }
         _worldIcons = State(initialValue: icons)
+        var art: [String: ServerArt] = [:]
+        for total in overview?.servers ?? [] { art[total.id] = cache.servers[total.id] }
+        _serverArt = State(initialValue: art)
     }
 
     private var instanceID: UUID? { world?.instanceID ?? model.historyInstanceID }
@@ -168,6 +180,7 @@ struct GameHistoryView: View {
         .task(id: overviewKey) { await loadOverview() }
         .task(id: runsKey) { await loadRuns() }
         .task(id: worldIconKey) { await loadWorldIcons() }
+        .task(id: serverArtKey) { await loadServerArt() }
         .onChange(of: span) { chartSelection = nil }
     }
 
@@ -291,7 +304,7 @@ struct GameHistoryView: View {
             if let world {
                 FilterChip(text: Messages.HistoryUI.filteredByWorld(world.title).localized) { self.world = nil }
             }
-            if let server { FilterChip(text: server.name) { self.server = nil } }
+            if let server { FilterChip(text: serverTitle(server)) { self.server = nil } }
             if problemsOnly {
                 FilterChip(text: Messages.SessionUI.problemsOnly.localized) { problemsOnly = false }
             }
@@ -424,7 +437,7 @@ struct GameHistoryView: View {
                 }
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 12)], spacing: 12) {
                     ForEach(Array(overview.instances.prefix(8))) { total in
-                        RankTile(total: total, share: share(total.seconds),
+                        RankTile(title: total.title, seconds: total.seconds, count: total.count, share: share(total.seconds),
                                  subtitle: total.lastPlayed.map(LocalizedFormat.relative),
                                  selected: model.historyInstanceID == total.instanceID && world == nil) {
                             if model.historyInstanceID == total.instanceID && world == nil { model.historyInstanceID = nil }
@@ -438,32 +451,39 @@ struct GameHistoryView: View {
         }
     }
 
+    /// The same tiles as saves, two save columns wide: addresses run long, and
+    /// a half-width tile still lines up with the grid above it.
     @ViewBuilder private var serversSection: some View {
         if !overview.servers.isEmpty {
             VStack(alignment: .leading, spacing: 14) {
                 SectionTitle(Messages.Servers.page.localized)
-                ForEach(overview.servers.sorted { $0.seconds > $1.seconds }.prefix(8)) { total in
-                    Button {
-                        server = server?.id == total.id ? nil : total; world = nil
-                    } label: {
-                        HStack(spacing: 12) {
-                            Image(systemName: "server.rack").foregroundStyle(.secondary)
-                            VStack(alignment: .leading, spacing: 3) {
-                                Text(total.name).fontWeight(.medium)
-                                Text(total.address.authority).font(.caption).foregroundStyle(.secondary)
-                            }
-                            Spacer()
-                            if total.estimatedSeconds > 0 {
-                                Text(Messages.Servers.estimated.localized).font(.caption).foregroundStyle(.secondary)
-                                    .help(Messages.Servers.estimateHint.localized)
-                            }
-                            Text(LocalizedFormat.duration(total.seconds)).monospacedDigit()
-                            if server?.id == total.id { Image(systemName: "checkmark.circle.fill") }
-                        }.padding(14).background(server?.id == total.id ? Color.accentColor.opacity(0.12) : Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
-                    }.buttonStyle(.plain)
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 452), spacing: 12)], spacing: 12) {
+                    ForEach(Array(overview.servers.sorted { $0.seconds > $1.seconds }.prefix(8))) { total in
+                        let title = serverTitle(total)
+                        RankTile(title: title, seconds: total.seconds, count: total.visits, share: share(total.seconds),
+                                 subtitle: serverSubtitle(total, title: title), estimated: total.estimatedSeconds > 0,
+                                 titleTruncation: title == total.address.authority ? .middle : .tail,
+                                 selected: server?.id == total.id) {
+                            server = server?.id == total.id ? nil : total; world = nil
+                        } icon: {
+                            ServerIcon(data: serverArt[total.id]?.icon, size: 40)
+                        }
+                    }
                 }
             }
         }
+    }
+
+    private func serverTitle(_ total: ServerPlaySummary) -> String {
+        serverArt[total.id]?.name ?? (total.name.isEmpty ? total.address.authority : total.name)
+    }
+
+    /// The address when the title is a name, and the instance last played on it.
+    private func serverSubtitle(_ total: ServerPlaySummary, title: String) -> String? {
+        let address = title == total.address.authority ? nil : total.address.authority
+        let instance = total.lastInstanceID.flatMap { id in model.state.instances.first { $0.id == id }?.name }
+        let parts = [address, instance].compactMap { $0 }
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
 
     @ViewBuilder private var worldsSection: some View {
@@ -481,7 +501,8 @@ struct GameHistoryView: View {
             } else {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 12)], spacing: 12) {
                     ForEach(Array(overview.worlds.prefix(8))) { total in
-                        RankTile(total: total, share: share(total.seconds), subtitle: total.subtitle, selected: world?.id == total.id) {
+                        RankTile(title: total.title, seconds: total.seconds, count: total.count, share: share(total.seconds),
+                                 subtitle: total.subtitle, selected: world?.id == total.id) {
                             world = world?.id == total.id ? nil : total; server = nil
                         } icon: {
                             WorldIcon(image: worldIcons[total.id], size: 40)
@@ -613,6 +634,24 @@ struct GameHistoryView: View {
     }
 
     private var worldIconKey: String { worldIconRequests.map(\.key).joined(separator: ",") }
+
+    private var serverArtKey: String {
+        overview.servers.map(\.id).sorted().joined(separator: ",") + "|" + (model.state.revision?.uuidString ?? "")
+    }
+
+    /// Names and favicons come from the instances' multiplayer lists and the
+    /// player's own aliases; a server known only from history keeps its address.
+    private func loadServerArt() async {
+        let wanted = Set(overview.servers.map(\.id))
+        guard !wanted.isEmpty else { return }
+        let paths = model.paths, state = model.state
+        let library = await Task.detached(priority: .utility) { ServerLibrary.load(paths: paths, state: state) }.value
+        guard !Task.isCancelled else { return }
+        for item in library.items where wanted.contains(item.id) {
+            let art = ServerArt(name: item.name, icon: item.icon)
+            serverArt[item.id] = art; cache.servers[item.id] = art
+        }
+    }
 
     /// Saves keep a small `icon.png` next to their level data. Reading it is
     /// display only: a missing or oversized file just leaves the globe.
@@ -858,9 +897,14 @@ private struct HighlightCard<Icon: View>: View {
 /// the filter control for that group and shows when it is the one selected.
 private struct RankTile<Icon: View>: View {
     @Environment(\.colorScheme) private var colorScheme
-    let total: GameHistoryTotal
+    let title: String
+    let seconds: Double
+    let count: Int
     let share: Double
     let subtitle: String?
+    /// Part of the time was inferred rather than seen, as for some server visits.
+    var estimated = false
+    var titleTruncation: Text.TruncationMode = .tail
     let selected: Bool
     let action: () -> Void
     @ViewBuilder var icon: Icon
@@ -873,18 +917,24 @@ private struct RankTile<Icon: View>: View {
                 HStack(spacing: 12) {
                     icon
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(total.title).font(.headline).lineLimit(1)
+                        Text(title).font(.headline).lineLimit(1).truncationMode(titleTruncation)
                         Text(subtitle ?? " ").font(.caption).foregroundStyle(.secondary).lineLimit(1)
                     }
                     Spacer(minLength: 0)
                 }
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(alignment: .firstTextBaseline) {
-                        Text(LocalizedFormat.duration(total.seconds))
+                        Text(LocalizedFormat.duration(seconds))
                             .font(.system(size: 17, weight: .semibold, design: .rounded)).monospacedDigit()
                         Spacer(minLength: 6)
-                        Text(Messages.HistoryUI.sessionCount(Int64(total.count)).localized + " · " + Messages.HistoryUI.shareOfRange(LocalizedFormat.percent(share)).localized)
-                            .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                        HStack(spacing: 0) {
+                            Text([Messages.HistoryUI.sessionCount(Int64(count)).localized, Messages.HistoryUI.shareOfRange(LocalizedFormat.percent(share)).localized].joined(separator: " · "))
+                            if estimated {
+                                Text(" · ")
+                                Text(Messages.Servers.estimated.localized).help(Messages.Servers.estimateHint.localized)
+                            }
+                        }
+                        .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
                     }
                     ZStack(alignment: .leading) {
                         Capsule().fill(.primary.opacity(0.08))
@@ -914,8 +964,8 @@ private struct RankTile<Icon: View>: View {
         }
         .onHover { hovering = $0 }
         .help(Messages.HistoryUI.showRuns.localized)
-        .accessibilityLabel(total.title)
-        .accessibilityValue(LocalizedFormat.duration(total.seconds))
+        .accessibilityLabel(title)
+        .accessibilityValue(LocalizedFormat.duration(seconds))
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 }
