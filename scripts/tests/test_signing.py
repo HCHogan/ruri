@@ -69,12 +69,17 @@ class SigningTests(unittest.TestCase):
                 with self.assertRaises(signing.SigningError):
                     signing.signing_material(environment)
 
-    def test_unpinned_identity_override_is_rejected(self):
-        with patch.object(signing, "command") as command:
-            with self.assertRaisesRegex(signing.SigningError, "does not match"):
-                with signing.signing_environment({"RURI_SIGN_IDENTITY": "A" * 40}):
-                    self.fail("An unrelated signing identity must not be accepted")
-            command.assert_not_called()
+    def test_contributor_identity_signs_only_local_builds(self):
+        with patch.object(signing, "available_identities", return_value={"A" * 40}) as identities:
+            with signing.signing_environment({"RURI_SIGN_IDENTITY": "a" * 40}) as environment:
+                self.assertEqual(environment["RURI_SIGN_IDENTITY"], "A" * 40)
+            identities.reset_mock()
+            for flag in ["RURI_REQUIRE_SIGNING", "CI", "GITHUB_ACTIONS"]:
+                with self.subTest(flag=flag):
+                    with self.assertRaisesRegex(signing.SigningError, "does not match"):
+                        with signing.signing_environment({"RURI_SIGN_IDENTITY": "A" * 40, flag: "1"}):
+                            self.fail("Releases and CI must only use the pinned identity")
+            identities.assert_not_called()
 
     def mock_security(self, arguments, **kwargs):
         if arguments[:2] == ["security", "create-keychain"]:
@@ -112,18 +117,20 @@ class SigningTests(unittest.TestCase):
             self.assertEqual(command.call_args.args[0][:2], ["security", "delete-keychain"])
 
     def test_package_verification_requires_apple_chain_and_matching_team_on_every_helper(self):
-        with patch.object(signing, "certificate_team", return_value="ABCDEFGHIJ"):
-            with patch.object(signing, "command", return_value=b"TeamIdentifier=ABCDEFGHIJ\n") as command:
-                signing.verify(self.root / "Ruri.app", {"RURI_SIGN_IDENTITY": signing.fingerprint()})
-        checks = [call.args[0] for call in command.call_args_list if "--verify" in call.args[0]]
-        self.assertEqual(len(checks), 8)
-        for arguments in checks:
-            requirement = arguments[arguments.index("-R") + 1]
-            self.assertIn("anchor apple generic", requirement)
-            self.assertIn('certificate leaf = H"' + signing.fingerprint() + '"', requirement)
-            self.assertIn("1.2.840.113635.100.6.2.1", requirement)
-            self.assertIn("1.2.840.113635.100.6.1.12", requirement)
-            self.assertIn('subject.OU] = "ABCDEFGHIJ"', requirement)
+        for identity in [signing.fingerprint(), "A" * 40]:
+            with self.subTest(identity=identity):
+                with patch.object(signing, "certificate_team", return_value="ABCDEFGHIJ"):
+                    with patch.object(signing, "command", return_value=b"TeamIdentifier=ABCDEFGHIJ\n") as command:
+                        signing.verify(self.root / "Ruri.app", {"RURI_SIGN_IDENTITY": identity})
+                checks = [call.args[0] for call in command.call_args_list if "--verify" in call.args[0]]
+                self.assertEqual(len(checks), 8)
+                for arguments in checks:
+                    requirement = arguments[arguments.index("-R") + 1]
+                    self.assertIn("anchor apple generic", requirement)
+                    self.assertIn('certificate leaf = H"' + identity + '"', requirement)
+                    self.assertIn("1.2.840.113635.100.6.2.1", requirement)
+                    self.assertIn("1.2.840.113635.100.6.1.12", requirement)
+                    self.assertIn('subject.OU] = "ABCDEFGHIJ"', requirement)
 
     def test_package_verification_rejects_a_missing_team_identifier(self):
         with patch.object(signing, "certificate_team", return_value="ABCDEFGHIJ"):

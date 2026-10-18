@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Use the pinned Apple Development identity for local and CI packages."""
+"""Sign packages with the pinned Apple Development identity, or a contributor's own locally."""
 
 import argparse
 import base64
@@ -20,7 +20,6 @@ ROOT = Path(__file__).resolve().parents[2]
 CERTIFICATE = ROOT / "Resources/RuriSigning.cer"
 INTERMEDIATE_CERTIFICATE = ROOT / "Resources/AppleWWDRCAG3.cer"
 SECRET_VARIABLES = ("RURI_SIGN_P12_BASE64", "RURI_SIGN_P12_PASSWORD")
-CONTRIBUTOR_IDENTITY = "RURI_CONTRIBUTOR_SIGN_IDENTITY"
 
 
 class SigningError(Exception):
@@ -58,15 +57,17 @@ def fingerprint():
     return hashlib.sha1(CERTIFICATE.read_bytes()).hexdigest().upper()
 
 
-def certificate_team(certificate=None):
-    subject = command(["/usr/bin/openssl", "x509", "-inform", "DER", "-in", str(certificate or CERTIFICATE),
+def certificate_team():
+    subject = command(["/usr/bin/openssl", "x509", "-inform", "DER", "-in", str(CERTIFICATE),
                        "-noout", "-subject", "-nameopt", "RFC2253"], label="Certificate team lookup").decode()
     match = re.search(r"(?:^|,)OU=([A-Z0-9]{10})(?:,|$)", subject.strip())
     if not match:
-        if certificate is None:
-            raise SigningError("The pinned signing certificate has no Apple Team ID.")
-        raise SigningError("The contributor signing certificate has no Apple Team ID.")
+        raise SigningError("The pinned signing certificate has no Apple Team ID.")
     return match[1]
+
+
+def pinned_only(environment):
+    return environment.get("RURI_REQUIRE_SIGNING") == "1" or bool(environment.get("CI") or environment.get("GITHUB_ACTIONS"))
 
 
 def available_identities(keychain=None):
@@ -75,53 +76,6 @@ def available_identities(keychain=None):
         arguments.append(str(keychain))
     output = command(arguments, label="Signing identity lookup").decode()
     return {value.upper() for value in re.findall(r'^\s*\d+\)\s+([A-Fa-f0-9]{40})\s+"', output, re.MULTILINE)}
-
-
-def contributor_identity(environment):
-    if CONTRIBUTOR_IDENTITY not in environment:
-        return None
-    if environment.get("RURI_REQUIRE_SIGNING") == "1" or "CI" in environment or "GITHUB_ACTIONS" in environment:
-        raise SigningError("Contributor signing is only available for local builds without required release signing or CI.")
-    identity = environment[CONTRIBUTOR_IDENTITY]
-    if not re.fullmatch(r"[A-Fa-f0-9]{40}", identity):
-        raise SigningError("RURI_CONTRIBUTOR_SIGN_IDENTITY must be a SHA-1 signing identity fingerprint.")
-    override = environment.get("RURI_SIGN_IDENTITY")
-    if override and override.upper() != identity.upper():
-        raise SigningError("RURI_SIGN_IDENTITY conflicts with the contributor signing identity.")
-    return identity.upper()
-
-
-def apple_requirement(identity, team):
-    return (f'anchor apple generic and certificate leaf = H"{identity}" '
-            'and certificate 1[field.1.2.840.113635.100.6.2.1] exists '
-            'and certificate leaf[field.1.2.840.113635.100.6.1.12] exists '
-            f'and certificate leaf[subject.OU] = "{team}"')
-
-
-def contributor_team(target, identity, work):
-    prefix = work / "certificate-"
-    command(["codesign", "-d", "--extract-certificates=" + str(prefix), str(target)],
-            label="Contributor signing certificate extraction")
-    certificate = Path(str(prefix) + "0")
-    if hashlib.sha1(certificate.read_bytes()).hexdigest().upper() != identity:
-        raise SigningError("The package leaf certificate does not match the contributor signing identity.")
-    return certificate_team(certificate)
-
-
-def validate_contributor(identity):
-    if identity not in available_identities():
-        raise SigningError("The contributor identity is not a valid code signing identity in the keychain.")
-    work_root = ROOT / ".work"
-    work_root.mkdir(exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix="contributor-signing-", dir=work_root) as temporary:
-        work = Path(temporary)
-        target = work / "signing-check"
-        shutil.copyfile("/usr/bin/true", target)
-        command(["codesign", "--force", "--sign", identity, str(target)], label="Contributor identity signing check")
-        team = contributor_team(target, identity, work)
-        command(["codesign", "--verify", "--all-architectures", "--strict", "-R",
-                 "=" + apple_requirement(identity, team), str(target)],
-                label="Contributor Apple Development certificate verification")
 
 
 def save_private(path, data):
@@ -155,18 +109,20 @@ def signing_environment(environment):
         child.pop(name, None)
     child.pop("RURI_SIGN_KEYCHAIN", None)
     child["RURI_SIGNING_ACTIVE"] = "1"
-    contributor = contributor_identity(environment)
-    if contributor is not None:
-        validate_contributor(contributor)
-        child["RURI_SIGN_IDENTITY"] = contributor
-        print("Signing with an Apple Development identity: contributor build, not a release signature.", flush=True)
-        yield child
-        return
     required = environment.get("RURI_REQUIRE_SIGNING") == "1"
     override = environment.get("RURI_SIGN_IDENTITY")
     identity = fingerprint()
     if override and override != "-" and override.upper() != identity:
-        raise SigningError("The requested signing identity does not match the pinned Apple certificate.")
+        # A contributor's own Apple Development identity keeps Keychain access
+        # stable across local rebuilds. Releases and CI only use the pinned one.
+        if pinned_only(environment):
+            raise SigningError("The requested signing identity does not match the pinned Apple certificate.")
+        if override.upper() not in available_identities():
+            raise SigningError("RURI_SIGN_IDENTITY must be the SHA-1 of a code signing identity in the keychain.")
+        child["RURI_SIGN_IDENTITY"] = override.upper()
+        print(f"Signing a contributor build with the local identity: {override.upper()}", flush=True)
+        yield child
+        return
     if override == "-":
         if required:
             raise SigningError("A required signed package must not use ad hoc signing.")
@@ -183,7 +139,8 @@ def signing_environment(environment):
         if required or override:
             raise SigningError("The pinned Apple Development identity is unavailable. Supply signing secrets in CI or install it with Xcode locally.")
         child["RURI_SIGN_IDENTITY"] = "-"
-        print("No pinned Apple Development identity is available; this contributor build uses ad hoc signing.", flush=True)
+        print("No pinned Apple Development identity is available; this contributor build uses ad hoc signing. "
+              "Set RURI_SIGN_IDENTITY to your Apple Development identity's SHA-1 to keep Keychain access across rebuilds.", flush=True)
         yield child
         return
     keychain_password = secrets.token_urlsafe(48)
@@ -225,26 +182,29 @@ def signing_environment(environment):
 
 
 def verify(app, environment):
-    contributor = contributor_identity(environment)
-    identity = environment.get("RURI_SIGN_IDENTITY", contributor or "-")
-    if contributor is not None:
-        if identity.upper() != contributor:
-            raise SigningError("The package must use the requested contributor signing identity.")
-        work_root = ROOT / ".work"
-        work_root.mkdir(exist_ok=True)
-        with tempfile.TemporaryDirectory(prefix="contributor-verify-", dir=work_root) as temporary:
-            team = contributor_team(app, contributor, Path(temporary))
-        identity = contributor
-    elif identity == "-" and environment.get("RURI_REQUIRE_SIGNING") != "1":
+    identity = environment.get("RURI_SIGN_IDENTITY", "-").upper()
+    if identity == "-" and environment.get("RURI_REQUIRE_SIGNING") != "1":
         return
-    elif identity.upper() != fingerprint():
-        raise SigningError("A signed package must use the pinned Apple Development certificate.")
-    else:
+    if identity == fingerprint():
         team = certificate_team()
+    elif identity != "-" and not pinned_only(environment):
+        # A contributor package names its own Team ID; the requirement below
+        # still pins the leaf certificate and Apple's development chain.
+        details = command(["codesign", "-d", "--verbose=2", str(app)],
+                          label="Signing team lookup", include_stderr=True).decode()
+        match = re.search(r"^TeamIdentifier=([A-Z0-9]{10})$", details, re.MULTILINE)
+        if not match:
+            raise SigningError("The contributor signing certificate has no Apple Team ID.")
+        team = match[1]
+    else:
+        raise SigningError("A signed package must use the pinned Apple Development certificate.")
     # A stable self-signed DR is insufficient: modern keychains additionally
     # partition those callers by CDHash. This Apple-issued Mac development
     # certificate is classified by its stable Team ID instead.
-    requirement = apple_requirement(identity, team)
+    requirement = (f'anchor apple generic and certificate leaf = H"{identity}" '
+                   'and certificate 1[field.1.2.840.113635.100.6.2.1] exists '
+                   'and certificate leaf[field.1.2.840.113635.100.6.1.12] exists '
+                   f'and certificate leaf[subject.OU] = "{team}"')
     sparkle = app / "Contents/Frameworks/Sparkle.framework"
     targets = [app, app / "Contents/Helpers/ruri-cli", app / "Contents/Helpers/ruri-monitor", app / "Contents/Helpers/RuriGame.app",
                app / "Contents/Helpers/RuriGame.app/Contents/Frameworks/libRuriGameSupport.dylib",
@@ -255,13 +215,8 @@ def verify(app, environment):
         details = command(["codesign", "-d", "--verbose=2", str(target)],
                           label=f"Signing team verification for {target.name}", include_stderr=True).decode()
         if f"TeamIdentifier={team}" not in details.splitlines():
-            if contributor is not None:
-                raise SigningError(f"The signing Team ID for {target.name} does not match the contributor certificate.")
-            raise SigningError(f"The signing Team ID for {target.name} does not match the pinned certificate.")
-    if contributor is not None:
-        print("Verified the Apple certificate and Team ID on the app and every helper: contributor build, not a release signature.")
-    else:
-        print(f"Verified the Apple certificate and Team ID {team} on the app and every helper.")
+            raise SigningError(f"The signing Team ID for {target.name} does not match the signing certificate.")
+    print(f"Verified the Apple certificate and Team ID {team} on the app and every helper.")
 
 
 def cleanup_ci(environment):
@@ -292,7 +247,7 @@ def run_build(arguments, environment):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Sign packages with the pinned Apple Development identity, or explicitly opt in to local contributor signing.")
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=["run", "verify", "cleanup-ci"])
     parser.add_argument("arguments", nargs=argparse.REMAINDER)
     args = parser.parse_args()

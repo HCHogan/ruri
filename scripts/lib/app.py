@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Configure distribution metadata and bundled service credentials before signing."""
 import argparse
+import hashlib
 import os
 from pathlib import Path
 import plistlib
@@ -50,10 +51,11 @@ def configure_metadata(path: Path) -> None:
 
 def configure_updates(path: Path, environment=None) -> None:
     environment = os.environ if environment is None else environment
-    # Official releases verify against the pinned identity. An ad hoc package
-    # is a contributor or fork build: Sparkle would accept a signed official
-    # release over it, so it ships without an update key or feed.
-    if environment.get("RURI_SIGN_IDENTITY", "-") != "-":
+    # Official releases verify against the pinned identity. An ad hoc or
+    # contributor-signed package is a local or fork build: Sparkle would accept
+    # a signed official release over it, so it ships without an update key or feed.
+    identity = environment.get("RURI_SIGN_IDENTITY", "-").upper()
+    if identity != "-" and identity == hashlib.sha1((ROOT / "Resources/RuriSigning.cer").read_bytes()).hexdigest().upper():
         return
     with path.open("rb") as source:
         info = plistlib.load(source)

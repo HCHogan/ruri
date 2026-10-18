@@ -1,3 +1,4 @@
+import hashlib
 import importlib.util
 import os
 from pathlib import Path
@@ -56,13 +57,14 @@ class ConfigureUpdatesTests(unittest.TestCase):
         app.configure_updates(self.path, environment)
         return plistlib.loads(self.path.read_bytes())
 
-    def test_signed_packages_keep_updates(self):
-        info = self.configure({"RURI_SIGN_IDENTITY": "0123456789ABCDEF0123456789ABCDEF01234567"})
+    def test_pinned_packages_keep_updates(self):
+        pinned = hashlib.sha1((ROOT / "Resources/RuriSigning.cer").read_bytes()).hexdigest()
+        info = self.configure({"RURI_SIGN_IDENTITY": pinned})
         self.assertIn("SUPublicEDKey", info)
         self.assertIn("RuriAppcastBaseURL", info)
 
-    def test_ad_hoc_packages_never_update_to_official_releases(self):
-        for environment in ({}, {"RURI_SIGN_IDENTITY": "-"}):
+    def test_ad_hoc_and_contributor_packages_never_update_to_official_releases(self):
+        for environment in ({}, {"RURI_SIGN_IDENTITY": "-"}, {"RURI_SIGN_IDENTITY": "0123456789ABCDEF0123456789ABCDEF01234567"}):
             with self.subTest(environment=environment):
                 info = self.configure(environment)
                 self.assertNotIn("SUPublicEDKey", info)
