@@ -64,11 +64,14 @@ struct ArchiveAndLaunchTests {
         let legacyPlan = try LaunchBuilder.build(instance: instance, manifest: manifest, java: java, account: account, paths: paths)
         #expect(!legacyPlan.arguments.contains("-XstartOnFirstThread"))
         #expect(legacyPlan.nativeQuitSupported == false)
-        let glfw = try JSONDecoder().decode(Library.self, from: Data(#"{"name":"org.lwjgl:lwjgl-glfw:3.3.3"}"#.utf8))
-        manifest.libraries = [glfw]
-        let glfwFile = paths.libraries.appendingPathComponent(try Library.mavenPath(glfw.name))
-        try FileManager.default.createDirectory(at: glfwFile.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try Data("stub".utf8).write(to: glfwFile)
-        #expect(try LaunchBuilder.build(instance: instance, manifest: manifest, java: java, account: account, paths: paths).nativeQuitSupported == true)
+        // Minecraft 26.x ships the LWJGL SDL bindings in place of GLFW.
+        for name in ["org.lwjgl:lwjgl-glfw:3.3.3", "org.lwjgl:lwjgl-sdl:3.4.3"] {
+            let window = try JSONDecoder().decode(Library.self, from: Data(#"{"name":"\#(name)"}"#.utf8))
+            manifest.libraries = [window]
+            let windowFile = paths.libraries.appendingPathComponent(try Library.mavenPath(window.name))
+            try FileManager.default.createDirectory(at: windowFile.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try Data("stub".utf8).write(to: windowFile)
+            #expect(try LaunchBuilder.build(instance: instance, manifest: manifest, java: java, account: account, paths: paths).nativeQuitSupported == true)
+        }
     }
 }

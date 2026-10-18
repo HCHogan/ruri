@@ -3,7 +3,7 @@ import Foundation
 import RuriLocalization
 
 public enum NativeGameQuit {
-    /// An accepted request is not an exit acknowledgement. Cocoa/GLFW may
+    /// An accepted request is not an exit acknowledgement. Cocoa/GLFW/SDL may
     /// decline or defer it; only the process owner records the eventual exit.
     @MainActor public static func request(_ identity: ProcessIdentity) -> Bool {
         guard identity.isAlive,
