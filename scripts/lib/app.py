@@ -41,6 +41,13 @@ def configure_metadata(path: Path) -> None:
         info["RuriMicrosoftClientID"] = client_id
     else:
         info.pop("RuriMicrosoftClientID", None)
+    # Package managers that put ruri on PATH themselves, such as Nix, name
+    # themselves so the app does not offer its own command-line link.
+    package_manager = os.environ.get("RURI_PACKAGE_MANAGER", "").strip()
+    if package_manager:
+        info["RuriPackageManager"] = package_manager
+    else:
+        info.pop("RuriPackageManager", None)
     info["CFBundleShortVersionString"] = match[1]
     info["CFBundleVersion"] = build_number
     info["RuriVersion"] = version

@@ -106,6 +106,12 @@ extension Messages {
         public static var onboardingTitle: LocalizedMessage {
             .init(key: "CLISetup.onboardingTitle", table: "CLISetup", fallback: "在终端中使用 Ruri")
         }
+        /// 命令行工具由 %@ 提供
+        ///
+        /// Resource: `CLISetup.CLISetup.provided`.
+        public static func provided(_ value0: String) -> LocalizedMessage {
+            .init(key: "CLISetup.provided", table: "CLISetup", fallback: "命令行工具由 %@ 提供", arguments: [.text(value0)])
+        }
         /// 命令行工具已安装
         ///
         /// Resource: `CLISetup.CLISetup.ready`.
@@ -172,6 +178,7 @@ extension Messages {
             "CLISetup:CLISetup.onboardingDetail": .init("通过命令行管理实例、账号和配置，也可供 AI 智能体调用。", []),
             "CLISetup:CLISetup.onboardingHint": .init("安装时可能需要管理员授权。\n也可稍后在“设置”的“命令行与自动化”中安装。", []),
             "CLISetup:CLISetup.onboardingTitle": .init("在终端中使用 Ruri", []),
+            "CLISetup:CLISetup.provided": .init("命令行工具由 %@ 提供", [.text]),
             "CLISetup:CLISetup.ready": .init("命令行工具已安装", []),
             "CLISetup:CLISetup.readyDetail": .init("打开新的终端窗口，运行下方命令即可开始使用。", []),
             "CLISetup:CLISetup.reinstall": .init("重新安装", []),

@@ -307,6 +307,24 @@
         }
       }
     },
+    "CLISetup.provided" : {
+      "comment" : "Heading in command-line tool settings when a package manager puts the ruri command on PATH instead of the app. %@ is the package manager's name, such as Nix.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Command-line tool provided by %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "命令行工具由 %@ 提供"
+          }
+        }
+      }
+    },
     "CLISetup.ready" : {
       "comment" : "Installed-state heading in command-line tool settings and the CLI onboarding sheet.",
       "extractionState" : "manual",

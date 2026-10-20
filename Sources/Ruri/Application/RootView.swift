@@ -131,7 +131,7 @@ struct RootView: View {
     }
 
     private var canOfferCLISetup: Bool {
-        !cliSetupSeen && scenePhase == .active && model.page == .home && !model.busy && !model.readOnly
+        !cliSetupSeen && CLISetupModel.packageManager == nil && scenePhase == .active && model.page == .home && !model.busy && !model.readOnly
             && !model.isPresentingSheet && model.error == nil && model.pendingOpenURLs.isEmpty
     }
 }

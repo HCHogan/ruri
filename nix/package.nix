@@ -66,6 +66,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   env = {
     RURI_DISABLE_SPARKLE = "1";
+    # The package puts `ruri` on PATH, so the app does not offer its own link.
+    RURI_PACKAGE_MANAGER = "Nix";
     # The release CurseForge key is not public; users can add their own in Settings.
     RURI_CURSEFORGE_API_KEY = "";
   };

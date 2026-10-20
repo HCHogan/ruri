@@ -13,7 +13,8 @@ struct CLISettingsSection: View {
                     .font(.title2).foregroundStyle(setup.ready ? Color.green : Color.accentColor)
                     .padding(.top, 2).accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(setup.ready ? Messages.CLISetup.ready.localized : setup.repair ? Messages.CLISetup.repairTitle.localized : Messages.CLISetup.title.localized)
+                    Text(CLISetupModel.packageManager.map { Messages.CLISetup.provided($0).localized }
+                         ?? (setup.ready ? Messages.CLISetup.ready.localized : setup.repair ? Messages.CLISetup.repairTitle.localized : Messages.CLISetup.title.localized))
                         .font(.headline)
                     Text(setup.ready ? Messages.CLISetup.readyDetail.localized : setup.repair ? Messages.CLISetup.repairDetail.localized : Messages.CLISetup.introduction.localized)
                         .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
@@ -37,7 +38,7 @@ struct CLISettingsSection: View {
             if let issue = setup.issue { Text(issue).font(.caption).foregroundStyle(.red).textSelection(.enabled) }
             DisclosureGroup(Messages.CLISetup.details.localized) {
                 VStack(alignment: .leading, spacing: 16) {
-                    if !setup.link.isEmpty {
+                    if !setup.link.isEmpty && managesLink {
                         VStack(alignment: .leading, spacing: 6) {
                             Text(Messages.CLISetup.location.localized)
                                 .font(.caption).foregroundStyle(.secondary)
@@ -52,15 +53,17 @@ struct CLISettingsSection: View {
                             Button(Messages.CLISetup.copyDirectCommand.localized) {
                                 if let executable = RuriInstallation.cliExecutable { CLISetupModel.copy(CLIInstallation.shellQuote(executable.path) + " --help") }
                             }
-                            if setup.ready { Button(Messages.CLISetup.reinstall.localized) { setup.change(.install) } }
+                            if setup.ready && CLISetupModel.packageManager == nil { Button(Messages.CLISetup.reinstall.localized) { setup.change(.install) } }
                             if setup.owned || setup.legacyLink != nil {
                                 Button(Messages.CLIInterface.uninstallAction.localized, role: .destructive) { setup.change(.uninstall) }
                             }
                         }
                         .controlSize(.small)
-                        Text(Messages.CLISetup.authorizationHint.localized)
-                            .font(.caption).foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
+                        if managesLink {
+                            Text(Messages.CLISetup.authorizationHint.localized)
+                                .font(.caption).foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -74,4 +77,8 @@ struct CLISettingsSection: View {
         .task { setup.refresh() }
         .onChange(of: scenePhase) { if scenePhase == .active && !setup.working { setup.refresh() } }
     }
+
+    /// When a package manager provides `ruri`, only a link left by an earlier
+    /// installation of the app remains to be managed here.
+    private var managesLink: Bool { CLISetupModel.packageManager == nil || setup.repair }
 }
